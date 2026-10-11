@@ -83,16 +83,16 @@ public partial class MainWindow : Window
             {
                 Title = "操作指南",
                 Width = 400,
-                Height = 240,
+                Height = 520,
                 WindowStartupLocation = WindowStartupLocation.CenterOwner,
                 CanResize = false,
-                Content = new TextBlock
+                Content = new ScrollViewer { Content = new TextBlock
                 {
                     Margin = new Avalonia.Thickness(20),
                     TextWrapping = Avalonia.Media.TextWrapping.Wrap,
                     Foreground = Avalonia.Media.Brushes.Black,
-                    Text = "• 左键：翻开方格（首击必定安全）\n• 右键：按下即插旗 / 问号\n• 左右双键 / 中键 / 左键双击：快速连开 (Chord)，按下立即预显示\n• 游戏结束后：右键任意位置直接开新局\n• 菜单「棋盘」内含本体全部 18 种棋盘"
-                }
+                    Text = "翻开与标记\n• 左键点击：翻开砖块，首击安全。\n• 右键：旗帜 → 问号 → 取消。\n\n连开\n• 左右双键或中键按住：预览相关邻格；松开触发连开。\n• 周围旗帜数等于数字时翻开其余邻格；标错旗仍可能踩雷。\n\n移动与缩放\n• 左键按住任意砖块或空白处拖动棋盘。\n• 移动超过阈值进入拖拽，松手不会翻开砖块。\n• 滚轮：上下移动；Shift + 滚轮：左右移动。\n• Ctrl + 滚轮：以鼠标位置为中心缩放。\n• 顶部缩放条：25%～400%。\n\n新局与界面\n• 点击笑脸或游戏菜单中的新游戏重开。\n• 游戏结束后右键可快速重开。\n• 游戏菜单选择三档难度；棋盘菜单选择18种模式或自定义棋盘。\n• 状态栏显示模式、剩余雷数和用时（秒）。\n• 关于菜单包含作者主页、赞助码、复刻说明和技术栈。"
+                } }
             };
             await msgBox.ShowDialog(this);
         };

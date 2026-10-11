@@ -69,8 +69,16 @@ public sealed class MobileGameView : Grid
             boardMenu.Items.Add(item);
         }
         var help = new MenuItem { Header = "帮助" };
-        var instructions = new MenuItem { Header = "长按标旗/预览；双击数字连开；拖动/双指缩放" };
-        help.Items.Add(instructions);
+        help.Click += (_, _) => ShowModal(new StackPanel
+        {
+            Margin = new Thickness(24), Spacing = 16,
+            Children =
+            {
+                new TextBlock { Text = "操作指南", FontSize = 24, FontWeight = FontWeight.Bold },
+                new TextBlock { TextWrapping = TextWrapping.Wrap, Text =
+                    "默认操作\n• 单击未翻开格：翻开，首击安全。\n• 长按未翻开格约500毫秒：旗帜 → 问号 → 取消。\n• 双击同一已翻开数字格：连开。\n• 长按已翻开格：预览相关未翻开邻格；松手取消，不连开。\n\n模式开关\n• 标旗模式：点击格子切换标记。\n• 连开模式：点击已翻开数字格连开。\n• 两个开关互斥；关闭后恢复默认操作。\n\n浏览棋盘\n• 单指拖动移动，双指捏合缩放（30%～500%）。\n• 拖动或缩放会取消本次翻开/长按操作。\n• 新局自动调整初始缩放并居中。\n\n新局与菜单\n• 点击笑脸或游戏菜单中的新游戏重开。\n• 胜利/失败后双击棋盘砖块重开。\n• 游戏菜单选择难度，棋盘菜单选择18种模式。\n• 红色数字分别表示剩余雷数和用时（秒）；下方显示状态和翻开进度。\n\n连开规则\n周围旗帜数等于数字时翻开其余邻格；旗帜位置错误仍可能踩雷。" }
+            }
+        });
         var aboutItem = new MenuItem { Header = "关于" };
         aboutItem.Click += (_, _) =>
         {
@@ -83,29 +91,7 @@ public sealed class MobileGameView : Grid
                 intent.AddFlags(global::Android.Content.ActivityFlags.NewTask);
                 global::Android.App.Application.Context.StartActivity(intent);
             };
-            var close = new Button { Content = "确认", HorizontalAlignment = HorizontalAlignment.Stretch,
-                HorizontalContentAlignment = HorizontalAlignment.Center, Margin = new Thickness(16, 8, 16, 16) };
-            _field.CancelTouchGesture();
-            var dialogContent = new Grid { RowDefinitions = new RowDefinitions("*,Auto") };
-            dialogContent.Children.Add(new ScrollViewer { Content = view });
-            Grid.SetRow(close, 1);
-            dialogContent.Children.Add(close);
-            var card = new Border { Background = Brushes.White, CornerRadius = new CornerRadius(16),
-                Margin = new Thickness(20), MaxWidth = 480, MaxHeight = 680,
-                HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center,
-                Child = dialogContent };
-            // Overlay the entire game, leaving the board attached and its state intact.
-            var overlay = new Border { Background = new SolidColorBrush(Color.Parse("#88000000")), Child = card };
-            _aboutPage = overlay;
-            _gamePanel.IsHitTestVisible = false;
-            Children.Add(overlay);
-            close.Click += (_, _) =>
-            {
-                if (_aboutPage != overlay) return;
-                Children.Remove(overlay);
-                _aboutPage = null;
-                _gamePanel.IsHitTestVisible = true;
-            };
+            ShowModal(view);
         };
         menu.Items.Add(gameMenu); menu.Items.Add(boardMenu); menu.Items.Add(help); menu.Items.Add(aboutItem);
         menu.Background = Brushes.White;
@@ -142,6 +128,32 @@ public sealed class MobileGameView : Grid
         AttachedToVisualTree += (_, _) => _clock.Start();
         DetachedFromVisualTree += (_, _) => _clock.Stop();
         Restart();
+    }
+
+    private void ShowModal(Control content)
+    {
+        if (_aboutPage != null) return;
+        _field.CancelTouchGesture();
+        var close = new Button { Content = "确认", HorizontalAlignment = HorizontalAlignment.Stretch,
+            HorizontalContentAlignment = HorizontalAlignment.Center, Margin = new Thickness(16, 8, 16, 16) };
+        var layout = new Grid { RowDefinitions = new RowDefinitions("*,Auto") };
+        layout.Children.Add(new ScrollViewer { Content = content });
+        Grid.SetRow(close, 1);
+        layout.Children.Add(close);
+        var card = new Border { Background = Brushes.White, CornerRadius = new CornerRadius(16),
+            Margin = new Thickness(20), MaxWidth = 480, MaxHeight = 680,
+            HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center, Child = layout };
+        var overlay = new Border { Background = new SolidColorBrush(Color.Parse("#88000000")), Child = card };
+        _aboutPage = overlay;
+        _gamePanel.IsHitTestVisible = false;
+        Children.Add(overlay);
+        close.Click += (_, _) =>
+        {
+            if (_aboutPage != overlay) return;
+            Children.Remove(overlay);
+            _aboutPage = null;
+            _gamePanel.IsHitTestVisible = true;
+        };
     }
 
     private void Restart()
