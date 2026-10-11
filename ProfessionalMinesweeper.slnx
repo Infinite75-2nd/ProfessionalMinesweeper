@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/ProfessionalMinesweeper.Core/ProfessionalMinesweeper.Core.csproj" />
+    <Project Path="src/ProfessionalMinesweeper.Desktop/ProfessionalMinesweeper.Desktop.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/ProfessionalMinesweeper.Tests/ProfessionalMinesweeper.Tests.csproj" />
+  </Folder>
+</Solution>

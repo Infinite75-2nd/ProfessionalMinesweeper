@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0-android</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <SupportedOSPlatformVersion>23</SupportedOSPlatformVersion>
+    <ApplicationId>com.inf75.professionalminesweeper.app</ApplicationId>
+    <ApplicationTitle>专家扫雷</ApplicationTitle>
+    <ApplicationVersion>1</ApplicationVersion>
+    <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
+    <AndroidPackageFormats>apk</AndroidPackageFormats>
+    <PublishAot>false</PublishAot>
+    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Avalonia.Android" Version="12.1.3" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="12.1.3" />
+    <ProjectReference Include="../ProfessionalMinesweeper.Core/ProfessionalMinesweeper.Core.csproj" />
+    <Compile Include="../ProfessionalMinesweeper.Desktop/MinefieldControl.cs" Link="MinefieldControl.cs" />
+    <Compile Include="../ProfessionalMinesweeper.Desktop/AboutView.cs" Link="AboutView.cs" />
+    <AvaloniaResource Include="../../assets/Author.png" Link="Assets/author.png" />
+    <AvaloniaResource Include="../../assets/感谢支持.png" Link="Assets/support.png" />
+  </ItemGroup>
+</Project>

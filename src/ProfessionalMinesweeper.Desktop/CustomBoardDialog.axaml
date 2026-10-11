@@ -1,0 +1,42 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="ProfessionalMinesweeper.Desktop.CustomBoardDialog"
+        Title="自定义棋盘参数"
+        Width="320" Height="280"
+        WindowStartupLocation="CenterOwner"
+        CanResize="false"
+        Background="#ECECEC">
+    <StackPanel Margin="20" Spacing="12">
+        <StackPanel Orientation="Horizontal" Spacing="10">
+            <TextBlock Text="拓扑模式:" Width="80" VerticalAlignment="Center" Foreground="#202020"/>
+            <ComboBox Name="ShapeCombo" SelectedIndex="0" Width="190">
+                <ComboBoxItem Content="Classical"/>
+                <ComboBoxItem Content="Hexagonal"/>
+                <ComboBoxItem Content="Triangular"/>
+                <ComboBoxItem Content="Octagonal"/>
+                <ComboBoxItem Content="Diamond"/>
+                <ComboBoxItem Content="Pentagonal"/>
+            </ComboBox>
+        </StackPanel>
+
+        <StackPanel Orientation="Horizontal" Spacing="10">
+            <TextBlock Text="行数 (Rows):" Width="80" VerticalAlignment="Center" Foreground="#202020"/>
+            <NumericUpDown Name="RowsInput" Minimum="5" Maximum="60" Value="16" Width="190"/>
+        </StackPanel>
+
+        <StackPanel Orientation="Horizontal" Spacing="10">
+            <TextBlock Text="列数 (Cols):" Width="80" VerticalAlignment="Center" Foreground="#202020"/>
+            <NumericUpDown Name="ColsInput" Minimum="5" Maximum="60" Value="30" Width="190"/>
+        </StackPanel>
+
+        <StackPanel Orientation="Horizontal" Spacing="10">
+            <TextBlock Text="雷数 (Mines):" Width="80" VerticalAlignment="Center" Foreground="#202020"/>
+            <NumericUpDown Name="MinesInput" Minimum="1" Maximum="2000" Value="40" Width="190"/>
+        </StackPanel>
+
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10" Margin="0,10,0,0">
+            <Button Name="OkBtn" Content="确定" Width="70" HorizontalContentAlignment="Center"/>
+            <Button Name="CancelBtn" Content="取消" Width="70" HorizontalContentAlignment="Center"/>
+        </StackPanel>
+    </StackPanel>
+</Window>

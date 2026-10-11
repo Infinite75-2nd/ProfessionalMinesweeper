@@ -1,0 +1,44 @@
+# Professional Minesweeper
+
+[English](README.en.md)
+
+使用 **C#、.NET 10 与 Avalonia UI 12** 开发的多形状扫雷，支持 Windows 和 Android。
+
+## 项目来源
+
+本项目是对原版 **Professional Minesweeper（`profmine.exe`）** 的复刻。棋盘排列、菜单顺序和预设研究基于此前对原游戏的逆向分析，包括运行进程中的棋盘数据与邻接关系。这里提供的是独立实现，不是原作者的官方版本；原游戏名称及第三方素材的权利属于各自权利人。
+
+## 功能
+
+- 18 种棋盘：经典、六边形、三角形、镶木、鱼骨纹、地板、墙砖、圆形、五边形、Mosaic 5,7、Tilted H、Diamond 等。
+- 三档难度、延迟布雷、首击保护、旗帜/问号、连开、计时与胜负显示。
+- Windows：滚轮垂直移动，Shift + 滚轮水平移动，Ctrl + 滚轮缩放，左键拖拽棋盘。
+- Android：单指拖动、双指缩放、长按未翻开格标旗、长按数字预览邻格、双击数字连开；胜负结束后双击棋盘重开。
+- Windows Native AOT 发布；Android Release 使用 Mono AOT。
+
+## 构建
+
+需要 .NET 10 SDK。Windows Native AOT 还需要 Visual Studio C++ 工具链与 Windows SDK；Android 需要 `android` 工作负载、兼容 JDK 与 Android SDK。
+
+```powershell
+dotnet build -c Release
+dotnet test
+dotnet publish src/ProfessionalMinesweeper.Desktop/ProfessionalMinesweeper.Desktop.csproj -c Release -r win-x64 --self-contained true
+dotnet build src/ProfessionalMinesweeper.Android/ProfessionalMinesweeper.Android.csproj -c Release
+```
+
+Windows 静态链接使用 `2ndLAB.ANGLE.Static` 和 `2ndLAB.SkiaSharp.Static` NuGet 包，配置见 `NativeAOT.props`。发布目录为 Desktop 的 `bin/Release/net10.0/win-x64/publish/`；APK 位于 Android 的 `bin/Release/net10.0-android/`。
+
+## 结构
+
+- `src/ProfessionalMinesweeper.Core`：独立游戏引擎、多边形拓扑、棋盘生成与预设数据。
+- `src/ProfessionalMinesweeper.Desktop`：Windows 界面、绘制与鼠标操作。
+- `src/ProfessionalMinesweeper.Android`：Android 入口、触屏视口和移动界面。
+- `tests/ProfessionalMinesweeper.Tests`：核心逻辑、覆盖、连通性与性能回归测试。
+- `re/`：原游戏分析记录；原 EXE 和提取图集不纳入仓库。
+
+## 作者与许可
+
+**Infinite75** · [B站主页](https://space.bilibili.com/672619350)
+
+本项目代码以 **GPL-3.0-only** 发布，完整协议见 [LICENSE](LICENSE)。依赖组件遵循各自许可。项目仍在迭代，构建通过不代表所有棋盘与触屏操作已完成实机验证。
