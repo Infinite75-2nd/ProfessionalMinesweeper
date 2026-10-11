@@ -205,6 +205,8 @@ public partial class MainWindow : Window
     {
         if (_game == null) return;
         MinesCountText.Text = $"{Math.Max(0, _game.RemainingFlags):D3}";
+        ToolTip.SetTip(MinesCountText, _game.Status == GameStatus.NotStarted ? "首击后验证逻辑可解性" :
+            _game.IsLogicallySolvable ? "已验证：可通过逻辑推理完成" : "普通布局：未通过无猜验证，可能需要猜测");
         if (_game.Status == GameStatus.InProgress) ResetButton.Content = "😮";
         else if (_game.Status == GameStatus.NotStarted) ResetButton.Content = "😊";
     }

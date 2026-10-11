@@ -39,6 +39,8 @@ Windows 静态链接使用 `2ndLAB.ANGLE.Static` 和 `2ndLAB.SkiaSharp.Static` N
 
 ## 作者与许可
 
+布雷会参考集合约束推理验证候选布局（方法参考 [Simon Tatham 的 Mines](https://www.chiark.greenend.org.uk/~sgtatham/puzzles/doc/mines.html)），最多尝试128次、预算约200毫秒。验证通过的布局可由实现的逻辑规则完成；超过预算会保留普通布局，因此目前并非所有棋盘都保证无猜。核心实现为独立C#代码，未移植原项目源码。
+
 **Infinite75** · [B站主页](https://space.bilibili.com/672619350)
 
 本项目代码以 **GPL-3.0-only** 发布，完整协议见 [LICENSE](LICENSE)。依赖组件遵循各自许可。项目仍在迭代，构建通过不代表所有棋盘与触屏操作已完成实机验证。

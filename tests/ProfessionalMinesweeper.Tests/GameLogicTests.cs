@@ -6,6 +6,31 @@ namespace ProfessionalMinesweeper.Tests;
 public class GameLogicTests
 {
     [Fact]
+    public void LogicalSolver_RejectsAnUnavoidableFiftyFifty()
+    {
+        int[][] neighbors = { new[] { 1, 2 }, new[] { 0, 2 }, new[] { 0, 1 } };
+        Assert.False(LogicalMineSolver.CanSolve(neighbors, new[] { false, true, false }, 0, 1));
+    }
+
+    [Fact]
+    public void MineGeneration_CertifiedLayoutsPassIndependentReplay()
+    {
+        var top = TilingFactory.Create(BoardType.Square, 8, 8);
+        var positions = top.AllPositions.ToArray();
+        var ids = positions.Select((p, i) => (p, i)).ToDictionary(x => x.p, x => x.i);
+        var neighbors = positions.Select(p => top.GetNeighbors(p).Select(n => ids[n]).ToArray()).ToArray();
+        for (int seed = 0; seed < 12; seed++)
+        {
+            var game = new MinesweeperGame(top, 10, seed);
+            game.Reveal(positions[0]);
+            Assert.True(game.IsLogicallySolvable, $"seed {seed}: no certified layout found");
+            var mines = positions.Select(p => game.GetCell(p).IsMine).ToArray();
+            Assert.Equal(10, mines.Count(m => m));
+            Assert.True(LogicalMineSolver.CanSolve(neighbors, mines, 0, 10));
+        }
+    }
+
+    [Fact]
     public void PresetBoardsUseIncreasingPracticalMineDensities()
     {
         foreach (var type in Enum.GetValues<BoardType>())

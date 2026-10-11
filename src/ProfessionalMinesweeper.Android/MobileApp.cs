@@ -181,5 +181,7 @@ public sealed class MobileGameView : Grid
         _restart.Content = _game.Status == GameStatus.Won ? "😎" : _game.Status == GameStatus.Lost ? "☹" : "☺";
         string state = _game.Status switch { GameStatus.Won => "胜利", GameStatus.Lost => "踩雷", GameStatus.InProgress => "进行中", _ => "等待开始" };
         _status.Text = $"{_board} · {new[] { "初级", "中级", "高级" }[_difficulty]} · {state}\n已翻开 {_game.RevealedCount}/{_game.Topology.TotalCells - _game.TotalMines}";
+        if (_game.Status != GameStatus.NotStarted)
+            _status.Text += _game.IsLogicallySolvable ? " · 逻辑可解" : " · 普通布局（可能需猜）";
     }
 }

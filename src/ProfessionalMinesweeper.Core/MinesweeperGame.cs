@@ -7,6 +7,8 @@ public sealed class MinesweeperGame
     private readonly int _mineCount;
     private readonly Random _random;
     private bool _minesPlaced;
+    public bool IsLogicallySolvable { get; private set; }
+    public int GenerationAttempts { get; private set; }
 
     public IBoardTopology Topology => _topology;
     public GameStatus Status { get; private set; } = GameStatus.NotStarted;
@@ -59,6 +61,8 @@ public sealed class MinesweeperGame
         StartTime = null;
         EndTime = null;
         _minesPlaced = false;
+        IsLogicallySolvable = false;
+        GenerationAttempts = 0;
 
         for (int r = 0; r < _topology.Rows; r++)
         {
@@ -219,17 +223,33 @@ public sealed class MinesweeperGame
             candidates = _topology.AllPositions.Where(p => p != firstClick).ToList();
         }
 
-        for (int i = 0; i < candidates.Count; i++)
+        var positions = _topology.AllPositions.ToArray();
+        var indices = positions.Select((p, i) => (p, i)).ToDictionary(x => x.p, x => x.i);
+        var neighbors = positions.Select(p => _topology.GetNeighbors(p).Select(n => indices[n]).ToArray()).ToArray();
+        var layout = new bool[positions.Length];
+        var watch = System.Diagnostics.Stopwatch.StartNew();
+        // Prefer certified layouts without blocking a mobile UI indefinitely.
+        // A timed-out layout is explicitly not advertised as no-guess.
+        for (int attempt = 0; attempt < 128; attempt++)
         {
-            int j = _random.Next(i, candidates.Count);
-            (candidates[i], candidates[j]) = (candidates[j], candidates[i]);
+            Array.Clear(layout);
+            for (int i = 0; i < _mineCount; i++)
+            {
+                int j = _random.Next(i, candidates.Count);
+                (candidates[i], candidates[j]) = (candidates[j], candidates[i]);
+                layout[indices[candidates[i]]] = true;
+            }
+            GenerationAttempts++;
+            if (LogicalMineSolver.CanSolve(neighbors, layout, indices[firstClick], _mineCount,
+                () => watch.ElapsedMilliseconds >= 200))
+            {
+                IsLogicallySolvable = true;
+                break;
+            }
+            if (watch.ElapsedMilliseconds >= 200) break;
         }
-
-        for (int i = 0; i < _mineCount && i < candidates.Count; i++)
-        {
-            var minePos = candidates[i];
-            _cells[minePos.Row, minePos.Col].IsMine = true;
-        }
+        for (int i = 0; i < positions.Length; i++)
+            GetCell(positions[i]).IsMine = layout[i];
     }
 
     private void ComputeAdjacency()
