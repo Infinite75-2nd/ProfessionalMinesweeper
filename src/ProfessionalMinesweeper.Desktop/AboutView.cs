@@ -11,7 +11,9 @@ namespace ProfessionalMinesweeper.Desktop;
 public sealed class AboutView : StackPanel
 {
     public const string AuthorUrl = "https://space.bilibili.com/672619350";
+    public const string RepositoryUrl = "https://github.com/Infinite75-2nd/ProfessionalMinesweeper";
     public event Action? OpenAuthorRequested;
+    public event Action? OpenRepositoryRequested;
     public AboutView()
     {
         Margin = new Thickness(24);
@@ -35,6 +37,10 @@ public sealed class AboutView : StackPanel
         link.Click += (_, _) => OpenAuthorRequested?.Invoke();
         Children.Add(link);
         Children.Add(new TextBlock { Text = AuthorUrl, TextWrapping = TextWrapping.Wrap });
+        var repository = new Avalonia.Controls.Button { Content = "GitHub · 项目源码" };
+        repository.Click += (_, _) => OpenRepositoryRequested?.Invoke();
+        Children.Add(repository);
+        Children.Add(new TextBlock { Text = RepositoryUrl, TextWrapping = TextWrapping.Wrap });
         Children.Add(new TextBlock { Text = "技术栈\nC# · .NET 10 · Avalonia UI 12\n独立棋盘拓扑与扫雷引擎\nPC：Windows Native AOT · Skia/ANGLE 静态链接\nAndroid：.NET for Android · Mono AOT · Skia", TextWrapping = TextWrapping.Wrap });
         Children.Add(new TextBlock { Text = "喜欢这个项目？感谢支持作者", FontWeight = FontWeight.Bold });
         Children.Add(new Image { Source = Load("support.png"), MaxWidth = 280, MaxHeight = 360, Stretch = Stretch.Uniform,

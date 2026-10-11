@@ -21,6 +21,7 @@ public partial class MainWindow : Window
         {
             var about = new AboutView();
             about.OpenAuthorRequested += () => System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(AboutView.AuthorUrl) { UseShellExecute = true });
+            about.OpenRepositoryRequested += () => System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(AboutView.RepositoryUrl) { UseShellExecute = true });
             await new Window { Title = "关于", Width = 480, Height = 650, Content = new ScrollViewer { Content = about }, WindowStartupLocation = WindowStartupLocation.CenterOwner }.ShowDialog(this);
         };
         BoardViewport.SetBoard(MinefieldView);

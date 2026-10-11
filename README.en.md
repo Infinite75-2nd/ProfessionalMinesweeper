@@ -2,6 +2,8 @@
 
 [简体中文](README.md)
 
+[GitHub repository](https://github.com/Infinite75-2nd/ProfessionalMinesweeper)
+
 A multi-geometry Minesweeper implementation built with **C#, .NET 10 and Avalonia UI 12**, for Windows and Android.
 
 ## Origin

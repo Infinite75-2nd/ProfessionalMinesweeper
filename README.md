@@ -2,6 +2,8 @@
 
 [English](README.en.md)
 
+[GitHub 仓库](https://github.com/Infinite75-2nd/ProfessionalMinesweeper)
+
 使用 **C#、.NET 10 与 Avalonia UI 12** 开发的多形状扫雷，支持 Windows 和 Android。
 
 ## 项目来源

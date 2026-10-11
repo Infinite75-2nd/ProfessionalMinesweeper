@@ -84,6 +84,13 @@ public sealed class MobileGameView : Grid
         {
             if (_aboutPage != null) return;
             var view = new AboutView();
+            view.OpenRepositoryRequested += () =>
+            {
+                var intent = new global::Android.Content.Intent(global::Android.Content.Intent.ActionView,
+                    global::Android.Net.Uri.Parse(AboutView.RepositoryUrl));
+                intent.AddFlags(global::Android.Content.ActivityFlags.NewTask);
+                global::Android.App.Application.Context.StartActivity(intent);
+            };
             view.OpenAuthorRequested += () =>
             {
                 var intent = new global::Android.Content.Intent(global::Android.Content.Intent.ActionView,
