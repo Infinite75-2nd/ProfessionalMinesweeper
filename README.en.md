@@ -6,6 +6,8 @@
 
 A multi-geometry Minesweeper implementation built with **C#, .NET 10 and Avalonia UI 12**, for Windows and Android.
 
+This project's code is **AI-assisted**, including parts of the implementation, refactoring, documentation and tests. Development and iteration are coordinated by the author.
+
 ## Origin
 
 This project recreates the original **Professional Minesweeper (`profmine.exe`)**. Board layouts, menu ordering and preset research are based on earlier reverse-engineering work, including board data and adjacency read from the running original game. This is an independent implementation, not an official release by the original author. Original game names and third-party assets remain the property of their respective owners.
