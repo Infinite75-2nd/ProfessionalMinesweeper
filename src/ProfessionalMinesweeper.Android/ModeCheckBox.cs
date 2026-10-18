@@ -21,7 +21,7 @@ public sealed class ModeCheckBox : Avalonia.Controls.CheckBox
             var box = new Border { Width = 22, Height = 22, CornerRadius = new CornerRadius(4),
                 BorderThickness = new Thickness(2), BorderBrush = accent,
                 VerticalAlignment = VerticalAlignment.Center, Child = tick };
-            var text = new TextBlock { Text = label, FontSize = 15, Foreground = new SolidColorBrush(Color.Parse("#18354B")),
+            var text = new TextBlock { Text = label, FontSize = 15,
                 VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(8, 0, 0, 0) };
             var row = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,Auto"),
                 VerticalAlignment = VerticalAlignment.Center, HorizontalAlignment = HorizontalAlignment.Center };

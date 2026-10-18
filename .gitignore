@@ -1,22 +1,35 @@
+# Build output
 **/bin/
 **/obj/
+artifacts/
+*.pdb
+
+# IDE / user state
 .vs/
 .idea/
 *.user
 *.suo
-*.pdb
+
+# Release signing material
 *.apk
 *.aab
 *.keystore
 *.jks
+
+# Reverse-engineering inputs and local notes (not redistributable)
+profmine.exe
+extracted_bitmaps/
+re/
+AGENTS.md
+agents.md
+src/ProfessionalMinesweeper.Desktop/Assets/KR*.png
+
+# Debug databases and logs
 *.idb
 *.i64
 *.sqlite*
-profmine.exe
-extracted_bitmaps/
-AGENTS.md
-agents.md
-re/
-src/ProfessionalMinesweeper.Desktop/Assets/KR*.png
 *.log
-artifacts/
+
+# Scratch files
+*.tmp
+*.bak

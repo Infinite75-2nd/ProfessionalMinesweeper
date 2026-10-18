@@ -2,7 +2,6 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="ProfessionalMinesweeper.Desktop.App"
              RequestedThemeVariant="Light">
-             <!-- Fixed to Light so dark system themes never produce unreadable text on the light board. -->
 
     <Application.Styles>
         <FluentTheme />

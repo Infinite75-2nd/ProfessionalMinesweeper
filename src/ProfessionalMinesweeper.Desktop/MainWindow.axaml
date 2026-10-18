@@ -10,47 +10,46 @@
         Background="#EDF2F6">
 
     <DockPanel>
-        <Menu DockPanel.Dock="Top" Background="#E4E4E4" Foreground="#202020">
+        <Menu DockPanel.Dock="Top">
             <MenuItem Header="游戏 (_Game)">
                 <MenuItem Header="新游戏 (_New)" Name="MenuNewGame" InputGesture="F2"/>
                 <Separator/>
-                <MenuItem Header="&amp;Beginner" Name="MenuBeginner"/>
-                <MenuItem Header="&amp;Intermediate" Name="MenuIntermediate"/>
-                <MenuItem Header="&amp;Expert" Name="MenuExpert"/>
+                <MenuItem Header="初级" Name="MenuBeginner"/>
+                <MenuItem Header="中级" Name="MenuIntermediate"/>
+                <MenuItem Header="高级" Name="MenuExpert"/>
                 <Separator/>
                 <MenuItem Header="退出 (_Exit)" Name="MenuExit"/>
             </MenuItem>
             <MenuItem Header="棋盘 (_Board)">
-                <MenuItem Header="Classical" Name="MenuBoard20"/>
-                <MenuItem Header="Hexagonal" Name="MenuBoard21"/>
-                <MenuItem Header="Hexagonal Shifted" Name="MenuBoard28"/>
-                <MenuItem Header="Octagonal" Name="MenuBoard22"/>
-                <MenuItem Header="Triangular" Name="MenuBoard23"/>
-                <MenuItem Header="Triangular Shifted" Name="MenuBoard26"/>
-                <MenuItem Header="Parquet" Name="MenuBoard24"/>
-                <MenuItem Header="Parquet Fish Bone" Name="MenuBoard25"/>
-                <MenuItem Header="Floor" Name="MenuBoard27"/>
-                <MenuItem Header="Wall" Name="MenuBoard31"/>
-                <MenuItem Header="Crossed Squares" Name="MenuBoard29"/>
-                <MenuItem Header="60° Circles" Name="MenuBoard30"/>
-                <MenuItem Header="90° Circles" Name="MenuBoard32"/>
-                <MenuItem Header="Pentagonal" Name="MenuBoard33"/>
-                <MenuItem Header="Mosaic 5,7" Name="MenuBoard34"/>
-                <MenuItem Header="Tilted H" Name="MenuBoard35"/>
-                <MenuItem Header="Real Pentagonal" Name="MenuBoard36"/>
-                <MenuItem Header="Diamond" Name="MenuBoard37"/>
+                <MenuItem Header="经典方格" Name="MenuBoard20"/>
+                <MenuItem Header="六边形" Name="MenuBoard21"/>
+                <MenuItem Header="六边形（错位）" Name="MenuBoard28"/>
+                <MenuItem Header="八边形方格" Name="MenuBoard22"/>
+                <MenuItem Header="三角形" Name="MenuBoard23"/>
+                <MenuItem Header="三角形（错位）" Name="MenuBoard26"/>
+                <MenuItem Header="拼花地板" Name="MenuBoard24"/>
+                <MenuItem Header="鱼骨拼花" Name="MenuBoard25"/>
+                <MenuItem Header="地板" Name="MenuBoard27"/>
+                <MenuItem Header="砖墙" Name="MenuBoard31"/>
+                <MenuItem Header="交叉方格" Name="MenuBoard29"/>
+                <MenuItem Header="60° 圆形" Name="MenuBoard30"/>
+                <MenuItem Header="90° 圆形" Name="MenuBoard32"/>
+                <MenuItem Header="五边形" Name="MenuBoard33"/>
+                <MenuItem Header="5,7 镶嵌" Name="MenuBoard34"/>
+                <MenuItem Header="斜 H" Name="MenuBoard35"/>
+                <MenuItem Header="正五边形" Name="MenuBoard36"/>
+                <MenuItem Header="菱形" Name="MenuBoard37"/>
                 <Separator/>
                 <MenuItem Header="自定义棋盘 (_Custom)..." Name="MenuCustomBoard"/>
             </MenuItem>
-            <MenuItem Header="帮助 (_Help)">
-                <MenuItem Header="快捷操作说明" Name="MenuHowToPlay"/>
-            </MenuItem>
+            <MenuItem Header="帮助 (_Help)" Name="MenuHowToPlay"/>
+            <MenuItem Header="深色主题" Name="MenuTheme"/>
             <MenuItem Header="关于" Name="MenuAbout"/>
         </Menu>
 
-        <Border DockPanel.Dock="Top" Background="#FFFFFF" CornerRadius="10" Padding="12" Margin="12" BorderBrush="#D4DFE8" BorderThickness="1">
+        <Border Name="StatusPanel" DockPanel.Dock="Top" Background="#FFFFFF" CornerRadius="10" Padding="12" Margin="12" BorderBrush="#D4DFE8" BorderThickness="1">
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="14">
-                <TextBlock Name="ModeLabelText" Text="模式: Classical (初级)" FontWeight="SemiBold" Foreground="#202020" VerticalAlignment="Center"/>
+                <TextBlock Name="ModeLabelText" Text="模式: Classical (初级)" FontWeight="SemiBold" VerticalAlignment="Center"/>
                 <Border Background="Black" CornerRadius="3" Padding="6,2">
                     <TextBlock Name="MinesCountText" Text="010" Foreground="#FF4040" FontFamily="Consolas, Monospace" FontSize="18" FontWeight="Bold" VerticalAlignment="Center"/>
                 </Border>
@@ -66,7 +65,7 @@
             </StackPanel>
         </Border>
 
-        <Border Margin="12,0,12,12" Background="#D8E1E8" BorderBrush="#AABAC7" BorderThickness="1" CornerRadius="10">
+        <Border Name="BoardPanel" Margin="12,0,12,12" Background="#D8E1E8" BorderBrush="#AABAC7" BorderThickness="1" CornerRadius="10">
             <local:DesktopBoardViewport Name="BoardViewport"/>
         </Border>
     </DockPanel>

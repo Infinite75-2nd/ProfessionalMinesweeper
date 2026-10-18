@@ -22,8 +22,24 @@ public partial class MainWindow : Window
             var about = new AboutView();
             about.OpenAuthorRequested += () => System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(AboutView.AuthorUrl) { UseShellExecute = true });
             about.OpenRepositoryRequested += () => System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(AboutView.RepositoryUrl) { UseShellExecute = true });
-            await new Window { Title = "关于", Width = 480, Height = 650, Content = new ScrollViewer { Content = about }, WindowStartupLocation = WindowStartupLocation.CenterOwner }.ShowDialog(this);
+            bool aboutDark = ((App)Avalonia.Application.Current!).IsDarkTheme;
+            await new Window
+            {
+                Title = "关于",
+                Width = 480,
+                Height = 650,
+                Background = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse(aboutDark ? "#202B35" : "#FFFFFF")),
+                Content = new ScrollViewer { Content = about },
+                WindowStartupLocation = WindowStartupLocation.CenterOwner
+            }.ShowDialog(this);
         };
+        MenuTheme.Click += (_, _) =>
+        {
+            ((App)Avalonia.Application.Current!).ToggleTheme();
+            ApplyTheme();
+        };
+        ApplyTheme();
+        ActualThemeVariantChanged += (_, _) => ApplyTheme();
         BoardViewport.SetBoard(MinefieldView);
         ZoomSlider.ValueChanged += (_, _) => BoardViewport.SetZoom(ZoomSlider.Value / 100);
         BoardViewport.ZoomChanged += zoom => { ZoomText.Text = $"{zoom * 100:0}%"; if (Math.Abs(ZoomSlider.Value - zoom * 100) > .01) ZoomSlider.Value = zoom * 100; };
@@ -80,6 +96,7 @@ public partial class MainWindow : Window
 
         MenuHowToPlay.Click += async (s, e) =>
         {
+            bool dark = ((App)Avalonia.Application.Current!).IsDarkTheme;
             var msgBox = new Window
             {
                 Title = "操作指南",
@@ -87,11 +104,12 @@ public partial class MainWindow : Window
                 Height = 520,
                 WindowStartupLocation = WindowStartupLocation.CenterOwner,
                 CanResize = false,
+                Background = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse(dark ? "#202B35" : "#FFFFFF")),
                 Content = new ScrollViewer { Content = new TextBlock
                 {
                     Margin = new Avalonia.Thickness(20),
                     TextWrapping = Avalonia.Media.TextWrapping.Wrap,
-                    Foreground = Avalonia.Media.Brushes.Black,
+                    Foreground = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse(dark ? "#EDF3F7" : "#202020")),
                     Text = "翻开与标记\n• 左键点击：翻开砖块，首击安全。\n• 右键：旗帜 → 问号 → 取消。\n\n连开\n• 左右双键或中键按住：预览相关邻格；松开触发连开。\n• 周围旗帜数等于数字时翻开其余邻格；标错旗仍可能踩雷。\n\n移动与缩放\n• 左键按住任意砖块或空白处拖动棋盘。\n• 移动超过阈值进入拖拽，松手不会翻开砖块。\n• 滚轮：上下移动；Shift + 滚轮：左右移动。\n• Ctrl + 滚轮：以鼠标位置为中心缩放。\n• 顶部缩放条：25%～400%。\n\n新局与界面\n• 点击笑脸或游戏菜单中的新游戏重开。\n• 游戏结束后右键可快速重开。\n• 游戏菜单选择三档难度；棋盘菜单选择18种模式或自定义棋盘。\n• 状态栏显示模式、剩余雷数和用时（秒）。\n• 关于菜单包含作者主页、赞助码、复刻说明和技术栈。"
                 } }
             };
@@ -202,6 +220,20 @@ public partial class MainWindow : Window
         ResetButton.Content = status == GameStatus.Won ? "😎" : "😵";
     }
 
+    private void ApplyTheme()
+    {
+        bool dark = ((App)Avalonia.Application.Current!).IsDarkTheme;
+        var page = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse(dark ? "#101820" : "#EDF2F6"));
+        var card = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse(dark ? "#202B35" : "#FFFFFF"));
+        var frame = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse(dark ? "#16202A" : "#D8E1E8"));
+        var border = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse(dark ? "#2E3F4C" : "#AABAC7"));
+        Background = page;
+        StatusPanel.Background = card;
+        StatusPanel.BorderBrush = border;
+        BoardPanel.Background = frame;
+        BoardPanel.BorderBrush = border;
+    }
+
     private void UpdateStatusDisplay()
     {
         if (_game == null) return;
@@ -219,26 +251,5 @@ public partial class MainWindow : Window
         TimerText.Text = $"{Math.Min(999, seconds):D3}";
     }
 
-    private static string BoardName(BoardType type) => type switch
-    {
-        BoardType.Square => "Classical",
-        BoardType.Hexagon => "Hexagonal",
-        BoardType.HexagonShifted => "Hexagonal Shifted",
-        BoardType.OctagonSquare => "Octagonal",
-        BoardType.Triangle => "Triangular",
-        BoardType.TriangleShifted => "Triangular Shifted",
-        BoardType.Parquet => "Parquet",
-        BoardType.ParquetFishbone => "Parquet Fish Bone",
-        BoardType.Floor => "Floor",
-        BoardType.Wall => "Wall",
-        BoardType.CrossedSquares => "Crossed Squares",
-        BoardType.Circles60 => "60° Circles",
-        BoardType.Circles90 => "90° Circles",
-        BoardType.Pentagonal => "Pentagonal",
-        BoardType.Mosaic57 => "Mosaic 5,7",
-        BoardType.TiltedH => "Tilted H",
-        BoardType.RealPentagonal => "Real Pentagonal",
-        BoardType.Diamond => "Diamond",
-        _ => type.ToString()
-    };
+    private static string BoardName(BoardType type) => BoardNames.Display(type);
 }

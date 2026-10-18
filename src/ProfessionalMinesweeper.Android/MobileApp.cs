@@ -36,6 +36,10 @@ public sealed class MobileApp : Avalonia.Application
 
 public sealed class MobileGameView : Grid
 {
+    // Marks surfaces that follow the active theme. Decorative frames (such as the
+    // red-on-navy counters) deliberately keep their own colours.
+    private static readonly object ThemeSurface = new();
+
     private readonly MinefieldControl _field = new();
     private BoardType _board = BoardType.Square;
     private int _difficulty;
@@ -53,7 +57,8 @@ public sealed class MobileGameView : Grid
 
     public MobileGameView()
     {
-        Background = new SolidColorBrush(Color.Parse("#EDF2F6"));
+        ApplyTheme();
+        Avalonia.Application.Current!.ActualThemeVariantChanged += (_, _) => ApplyTheme();
         _field.QuickRestartRequested += Restart;
         _viewport = new BoardViewport(_field);
         var toolbar = new StackPanel { Spacing = 8, Margin = new Thickness(8) };
@@ -69,7 +74,7 @@ public sealed class MobileGameView : Grid
                 Foreground = new SolidColorBrush(Color.Parse("#287CA7")) });
             var text = new TextBlock { Text = label, FontSize = 17, VerticalAlignment = VerticalAlignment.Center };
             Grid.SetColumn(text, 1); row.Children.Add(text);
-            return new Button { Content = row, MinHeight = 54, Padding = new Thickness(16, 12),
+            return new Button { Content = row, MinHeight = 54, Padding = new Thickness(16, 12), Tag = ThemeSurface,
                 Background = Brushes.White, Foreground = new SolidColorBrush(Color.Parse("#18354B")),
                 BorderThickness = new Thickness(0), CornerRadius = new CornerRadius(10),
                 HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Stretch,
@@ -85,14 +90,14 @@ public sealed class MobileGameView : Grid
         };
         navigation.Children.Add(gameEntry);
         navigation.Children.Add(gameItems);
-        var newGame = new Button { Content = "新游戏", MinHeight = 48, HorizontalAlignment = HorizontalAlignment.Stretch,
+        var newGame = new Button { Content = "新游戏", MinHeight = 48, HorizontalAlignment = HorizontalAlignment.Stretch, Tag = ThemeSurface,
             HorizontalContentAlignment = HorizontalAlignment.Center, VerticalContentAlignment = VerticalAlignment.Center };
         newGame.Click += (_, _) => { CloseDrawer(); Restart(); };
         gameItems.Children.Add(newGame);
         for (int level = 0; level < 3; level++)
         {
             int selection = level;
-            var item = new Button { Content = new[] { "初级", "中级", "高级" }[level], MinHeight = 48, HorizontalAlignment = HorizontalAlignment.Stretch,
+            var item = new Button { Content = BoardNames.Difficulty(level), MinHeight = 48, HorizontalAlignment = HorizontalAlignment.Stretch, Tag = ThemeSurface,
                 HorizontalContentAlignment = HorizontalAlignment.Center, VerticalContentAlignment = VerticalAlignment.Center };
             item.Click += (_, _) => { CloseDrawer(); _difficulty = selection; Restart(); };
             gameItems.Children.Add(item);
@@ -105,10 +110,10 @@ public sealed class MobileGameView : Grid
             choices.Children.Add(new TextBlock { Text = "选择棋盘", FontSize = 24, FontWeight = FontWeight.Bold });
             foreach (var type in Enum.GetValues<BoardType>())
             {
-                var label = new TextBlock { Text = (_board == type ? "✓  " : "") + type,
+                var label = new TextBlock { Text = (_board == type ? "✓  " : "") + BoardNames.Display(type),
                     FontSize = 18, TextWrapping = TextWrapping.NoWrap, TextTrimming = TextTrimming.CharacterEllipsis,
                     HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center };
-                var item = new Button { Content = label, Padding = new Thickness(10, 8),
+                var item = new Button { Content = label, Padding = new Thickness(10, 8), Tag = ThemeSurface,
                     MinHeight = 52, HorizontalAlignment = HorizontalAlignment.Stretch,
                     HorizontalContentAlignment = HorizontalAlignment.Center, VerticalContentAlignment = VerticalAlignment.Center };
                 item.SizeChanged += (_, _) =>
@@ -177,11 +182,12 @@ public sealed class MobileGameView : Grid
                 HorizontalAlignment = HorizontalAlignment.Stretch, VerticalAlignment = VerticalAlignment.Stretch };
             dismiss.Click += (_, _) => CloseDrawer();
             overlay.Children.Add(dismiss);
-            overlay.Children.Add(new Border { Background = new SolidColorBrush(Color.Parse("#EDF3F7")), CornerRadius = new CornerRadius(0, 20, 20, 0), Width = 300, MaxWidth = Math.Max(160, Bounds.Width - 32),
+            overlay.Children.Add(new Border { Background = new SolidColorBrush(Color.Parse("#EDF3F7")), Tag = ThemeSurface, CornerRadius = new CornerRadius(0, 20, 20, 0), Width = 300, MaxWidth = Math.Max(160, Bounds.Width - 32),
                 HorizontalAlignment = HorizontalAlignment.Left, Child = new ScrollViewer { Content = navigation } });
             _drawer = overlay;
             _gamePanel.IsHitTestVisible = false;
             Children.Add(overlay);
+            ApplyTheme();
         };
         toolbar.Children.Add(header);
         var actions = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, HorizontalAlignment = HorizontalAlignment.Center };
@@ -189,10 +195,11 @@ public sealed class MobileGameView : Grid
         actions.Children.Add(new Border { Background = new SolidColorBrush(Color.Parse("#18354B")), CornerRadius = new CornerRadius(8), Padding = new Thickness(12, 6), Child = _mines });
         actions.Children.Add(_restart);
         actions.Children.Add(new Border { Background = new SolidColorBrush(Color.Parse("#18354B")), CornerRadius = new CornerRadius(8), Padding = new Thickness(12, 6), Child = _time });
-        toolbar.Children.Add(new Border { Background = Brushes.White, CornerRadius = new CornerRadius(10), Padding = new Thickness(12), Child = actions });
+        toolbar.Children.Add(new Border { Background = Brushes.White, CornerRadius = new CornerRadius(10), Padding = new Thickness(12), Child = actions, Tag = ThemeSurface });
         var switches = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 12, HorizontalAlignment = HorizontalAlignment.Center };
         var flagSwitch = new ModeCheckBox("标旗模式");
         var chordSwitch = new ModeCheckBox("连开模式");
+        var themeSwitch = new ModeCheckBox("深色主题");
         flagSwitch.IsCheckedChanged += (_, _) =>
         {
             _field.TouchFlagMode = flagSwitch.IsChecked == true;
@@ -203,8 +210,17 @@ public sealed class MobileGameView : Grid
             _field.TouchChordMode = chordSwitch.IsChecked == true;
             if (_field.TouchChordMode) flagSwitch.IsChecked = false;
         };
-        switches.Children.Add(flagSwitch); switches.Children.Add(chordSwitch);
-        toolbar.Children.Add(new Border { Background = Brushes.White, CornerRadius = new CornerRadius(10), Padding = new Thickness(8), Child = switches });
+        themeSwitch.IsCheckedChanged += (_, _) =>
+        {
+            ((Avalonia.Application)Avalonia.Application.Current!).RequestedThemeVariant =
+                themeSwitch.IsChecked == true ? ThemeVariant.Dark : ThemeVariant.Light;
+            // Theme resources propagate asynchronously; refresh our own surfaces
+            // after that so text and backgrounds never end up mismatched.
+            ApplyTheme();
+            Dispatcher.UIThread.Post(ApplyTheme, DispatcherPriority.Background);
+        };
+        switches.Children.Add(flagSwitch); switches.Children.Add(chordSwitch); switches.Children.Add(themeSwitch);
+        toolbar.Children.Add(new Border { Background = Brushes.White, CornerRadius = new CornerRadius(10), Padding = new Thickness(8), Child = switches, Tag = ThemeSurface });
         _status.HorizontalAlignment = HorizontalAlignment.Center;
         _status.TextAlignment = TextAlignment.Center;
         toolbar.Children.Add(_status);
@@ -216,6 +232,39 @@ public sealed class MobileGameView : Grid
         AttachedToVisualTree += (_, _) => _clock.Start();
         DetachedFromVisualTree += (_, _) => _clock.Stop();
         Restart();
+        ApplyTheme();
+    }
+
+    private void ApplyTheme()
+    {
+        bool dark = Avalonia.Application.Current?.RequestedThemeVariant == ThemeVariant.Dark;
+        Background = new SolidColorBrush(Color.Parse(dark ? "#101820" : "#EDF2F6"));
+        // Keep layout surfaces tied to the current variant. This also updates
+        // an already-open drawer when the switch is changed.
+        foreach (var control in Descendants(this))
+        {
+            // Only surfaces explicitly marked as theme panels are recoloured, so
+            // decorative frames such as the counter boxes keep their own colour.
+            if (control is Border border && ReferenceEquals(border.Tag, ThemeSurface))
+                border.Background = new SolidColorBrush(Color.Parse(dark ? "#202B35" : "#FFFFFF"));
+            if (control is Button button && ReferenceEquals(button.Tag, ThemeSurface))
+            {
+                button.Background = new SolidColorBrush(Color.Parse(dark ? "#263642" : "#FFFFFF"));
+                button.Foreground = new SolidColorBrush(Color.Parse(dark ? "#EDF3F7" : "#18354B"));
+            }
+        }
+    }
+
+    private static IEnumerable<Control> Descendants(Control root)
+    {
+        yield return root;
+        if (root is Panel panel)
+            foreach (var child in panel.Children)
+                foreach (var item in Descendants(child)) yield return item;
+        if (root is ContentControl content && content.Content is Control childContent)
+            foreach (var item in Descendants(childContent)) yield return item;
+        if (root is Decorator decorator && decorator.Child is Control decoratorChild)
+            foreach (var item in Descendants(decoratorChild)) yield return item;
     }
 
     private void CloseDrawer()
@@ -239,13 +288,14 @@ public sealed class MobileGameView : Grid
         layout.Children.Add(new ScrollViewer { Content = content, HorizontalContentAlignment = HorizontalAlignment.Stretch });
         Grid.SetRow(close, 1);
         layout.Children.Add(close);
-        var card = new Border { Background = Brushes.White, CornerRadius = new CornerRadius(16),
+        var card = new Border { Background = Brushes.White, Tag = ThemeSurface, CornerRadius = new CornerRadius(16),
             Margin = new Thickness(12, 20), MaxWidth = 480, MaxHeight = 680,
             HorizontalAlignment = HorizontalAlignment.Stretch, VerticalAlignment = VerticalAlignment.Center, Child = layout };
         var overlay = new Border { Background = new SolidColorBrush(Color.Parse("#88000000")), Child = card };
         _aboutPage = overlay;
         _gamePanel.IsHitTestVisible = false;
         Children.Add(overlay);
+        ApplyTheme();
         close.Click += (_, _) =>
         {
             if (_aboutPage != overlay) return;
@@ -285,7 +335,7 @@ public sealed class MobileGameView : Grid
         _time.Text = Math.Min(999, (int)_game.ElapsedTime.TotalSeconds).ToString("000");
         _restart.Content = _game.Status == GameStatus.Won ? "😎" : _game.Status == GameStatus.Lost ? "☹" : "☺";
         string state = _game.Status switch { GameStatus.Won => "胜利", GameStatus.Lost => "踩雷", GameStatus.InProgress => "进行中", _ => "等待开始" };
-        _status.Text = $"{_board} · {new[] { "初级", "中级", "高级" }[_difficulty]} · {state}\n已翻开 {_game.RevealedCount}/{_game.Topology.TotalCells - _game.TotalMines}";
+        _status.Text = $"{BoardNames.Display(_board)} · {BoardNames.Difficulty(_difficulty)} · {state}\n已翻开 {_game.RevealedCount}/{_game.Topology.TotalCells - _game.TotalMines}";
         if (_game.Status != GameStatus.NotStarted)
             _status.Text += _game.IsLogicallySolvable ? " · 逻辑可解" : " · 普通布局（可能需猜）";
     }
