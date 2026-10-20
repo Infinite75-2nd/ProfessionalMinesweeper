@@ -47,11 +47,20 @@ public static class TilingFactory
         return CreateProcedural(type, rows, cols);
     }
 
+    /// <summary>True when captured original presets exist (all 18 original boards).</summary>
+    public static bool HasPreset(BoardType type) => Array.Exists(OriginalPresets.All, p => p.Type == type);
+
     // Menu presets use captured positions, but retain the repaired vector shapes.
     public static (IBoardTopology topology, int mines) CreateMenuBoard(BoardType type, int level, int rows, int cols)
     {
-        var preset = Array.Find(OriginalPresets.All, p => p.Type == type && p.Level == level)
-            ?? throw new ArgumentOutOfRangeException(nameof(level));
+        var preset = Array.Find(OriginalPresets.All, p => p.Type == type && p.Level == level);
+        // Boards designed after the original (such as Sunflower) have no captured
+        // preset; generate them procedurally instead of failing.
+        if (preset is null)
+        {
+            var fresh = Create(type, rows, cols);
+            return (fresh, Math.Max(1, fresh.TotalCells / 8));
+        }
         if (type is BoardType.Mosaic57 or BoardType.RealPentagonal or BoardType.TiltedH or BoardType.Diamond or BoardType.Floor)
         {
             var reference = Create(type, rows, cols);
@@ -358,12 +367,78 @@ public static class TilingFactory
             BoardType.RealPentagonal => Build(BoardType.RealPentagonal, Floret(rows, cols), AdjacencyMode.EdgesAndCorners),
             BoardType.Mosaic57 => Build(BoardType.Mosaic57, MosaicExact(rows, cols), AdjacencyMode.EdgesAndCorners),
             BoardType.TiltedH => Build(BoardType.TiltedH, TiltedH(rows, cols), AdjacencyMode.EdgesAndCorners),
+            BoardType.Sunflower => new PolygonTilingTopology(BoardType.Sunflower,
+                SunflowerVoronoi(rows, cols), AdjacencyMode.Edges, 0.75),
             _ => Build(BoardType.Square, Square(rows, cols), AdjacencyMode.EdgesAndCorners)
         };
     }
 
     private static IBoardTopology Build(BoardType type, List<Pt[]> polys, AdjacencyMode mode)
         => new PolygonTilingTopology(type, polys, mode);
+
+    // 13. Sunflower: an original tiling built from a golden-angle spiral of sites.
+    //
+    // Cells are Voronoi regions of that point set, clipped to the board rectangle, so
+    // the plane is covered exactly once by construction -- there are no hand-tuned
+    // offsets that could leave seams, and every cell is a different organic polygon.
+    private static List<Pt[]> SunflowerVoronoi(int rows, int cols)
+    {
+        const double cell = 34;
+        double width = Math.Max(2, cols) * cell;
+        double height = Math.Max(2, rows) * cell;
+        int count = Math.Clamp(rows * cols, 12, 600);
+
+        // Vogel / sunflower distribution: even area coverage with a visible spiral.
+        const double goldenAngle = 2.39996322972865332;
+        var sites = new Pt[count];
+        for (int i = 0; i < count; i++)
+        {
+            double r = Math.Sqrt((i + 0.5) / count);
+            double a = i * goldenAngle;
+            sites[i] = new Pt(width * 0.5 + Math.Cos(a) * r * width * 0.5,
+                              height * 0.5 + Math.Sin(a) * r * height * 0.5);
+        }
+
+        var cells = new List<Pt[]>(count);
+        foreach (var site in sites)
+        {
+            var polygon = new List<Pt>
+            {
+                new(0, 0), new(width, 0), new(width, height), new(0, height)
+            };
+            foreach (var other in sites)
+            {
+                if (other.Equals(site)) continue;
+                polygon = ClipHalfPlane(polygon, site, other);
+                if (polygon.Count < 3) break;
+            }
+            if (polygon.Count >= 3) cells.Add(polygon.ToArray());
+        }
+        return cells;
+    }
+
+    // Keeps the part of a convex polygon closer to `keep` than to `other`.
+    private static List<Pt> ClipHalfPlane(List<Pt> polygon, Pt keep, Pt other)
+    {
+        double nx = other.X - keep.X, ny = other.Y - keep.Y;
+        double mx = (keep.X + other.X) * 0.5, my = (keep.Y + other.Y) * 0.5;
+        double Side(Pt p) => (p.X - mx) * nx + (p.Y - my) * ny;
+
+        var result = new List<Pt>(polygon.Count + 1);
+        for (int i = 0; i < polygon.Count; i++)
+        {
+            var a = polygon[i];
+            var b = polygon[(i + 1) % polygon.Count];
+            double da = Side(a), db = Side(b);
+            if (da <= 0) result.Add(a);
+            if ((da < 0 && db > 0) || (da > 0 && db < 0))
+            {
+                double t = da / (da - db);
+                result.Add(new Pt(a.X + (b.X - a.X) * t, a.Y + (b.Y - a.Y) * t));
+            }
+        }
+        return result;
+    }
 
     private static void Add(List<Pt[]> list, params (double x, double y)[] pts)
     {

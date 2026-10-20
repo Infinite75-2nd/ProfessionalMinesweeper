@@ -6,6 +6,33 @@ namespace ProfessionalMinesweeper.Tests;
 public class GameLogicTests
 {
     [Fact]
+    public void Sunflower_CoversBoardExactlyOnceWithOrganicCells()
+    {
+        var top = TilingFactory.Create(BoardType.Sunflower, 9, 9);
+        Assert.Equal(81, top.TotalCells);
+
+        bool Contains(Pt[] polygon, double x, double y)
+        {
+            bool inside = false;
+            for (int i = 0, j = polygon.Length - 1; i < polygon.Length; j = i++)
+                if ((polygon[i].Y > y) != (polygon[j].Y > y) &&
+                    x < (polygon[j].X - polygon[i].X) * (y - polygon[i].Y) /
+                        (polygon[j].Y - polygon[i].Y) + polygon[i].X)
+                    inside = !inside;
+            return inside;
+        }
+
+        // Each cell centre belongs to exactly one cell: no overlaps, no holes.
+        foreach (var tile in top.Tiles)
+            Assert.Equal(1, top.Tiles.Count(t => Contains(t.Polygon, tile.Center.X, tile.Center.Y)));
+
+        // Cells are irregular (not a repeated grid shape) and each has neighbours.
+        var shapes = top.Tiles.Select(t => string.Join(';', t.Polygon.Select(p => $"{p.X:0},{p.Y:0}"))).Distinct().Count();
+        Assert.True(shapes > top.TotalCells / 2, $"only {shapes} distinct outlines");
+        Assert.All(top.Tiles, t => Assert.NotEmpty(top.GetNeighbors(t.Pos)));
+    }
+
+    [Fact]
     public void LogicalSolver_RejectsAnUnavoidableFiftyFifty()
     {
         int[][] neighbors = { new[] { 1, 2 }, new[] { 0, 2 }, new[] { 0, 1 } };
@@ -33,7 +60,8 @@ public class GameLogicTests
     [Fact]
     public void PresetBoardsUseIncreasingPracticalMineDensities()
     {
-        foreach (var type in Enum.GetValues<BoardType>())
+        foreach (var type in Enum.GetValues<BoardType>()
+                     .Where(TilingFactory.HasPreset))
         {
             int previous = 0;
             for (int level = 0; level < 3; level++)
@@ -96,7 +124,8 @@ public class GameLogicTests
     [Fact]
     public void OriginalPresets_AllBoardsAndLevelsHaveValidConnectedNeighbors()
     {
-        foreach (var type in Enum.GetValues<BoardType>())
+        foreach (var type in Enum.GetValues<BoardType>()
+                     .Where(TilingFactory.HasPreset))
             for (int level = 0; level < 3; level++)
             {
                 var (top, mines) = TilingFactory.CreatePreset(type, level);

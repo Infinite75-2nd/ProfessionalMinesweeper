@@ -19,7 +19,10 @@ public enum BoardType
     Pentagonal,
     Mosaic57,
     TiltedH,
-    RealPentagonal
+    RealPentagonal,
+
+    /// <summary>Original design: organic cells from a golden-angle spiral Voronoi diagram.</summary>
+    Sunflower
 }
 
 public enum GameStatus

@@ -23,6 +23,7 @@ public static class BoardNames
         BoardType.TiltedH => "斜 H",
         BoardType.RealPentagonal => "正五边形",
         BoardType.Diamond => "菱形",
+        BoardType.Sunflower => "碎晶（自研）",
         _ => type.ToString()
     };
 

@@ -65,6 +65,14 @@ public sealed class PolygonTilingTopology : IBoardTopology
     public IReadOnlyList<Tile> Tiles { get; }
 
     public PolygonTilingTopology(BoardType type, IReadOnlyList<Pt[]> polygons, AdjacencyMode mode)
+        : this(type, polygons, mode, 2.6)
+    {
+    }
+
+    /// <param name="eps">Distance tolerance for touching geometry. Dense irregular
+    /// tilings (such as Voronoi cells) need a tighter value so cells that merely
+    /// pass close to each other are not treated as neighbours.</param>
+    public PolygonTilingTopology(BoardType type, IReadOnlyList<Pt[]> polygons, AdjacencyMode mode, double eps)
     {
         Type = type;
 
@@ -83,7 +91,7 @@ public sealed class PolygonTilingTopology : IBoardTopology
         Tiles = tiles;
 
         if (mode == AdjacencyMode.Proximity) BuildProximity();
-        else BuildShared(mode == AdjacencyMode.EdgesAndCorners);
+        else BuildShared(mode == AdjacencyMode.EdgesAndCorners, eps);
     }
 
     public PolygonTilingTopology(BoardType type, IReadOnlyList<Pt[]> polygons, IReadOnlyList<int[]> explicitNeighbors)
@@ -124,9 +132,8 @@ public sealed class PolygonTilingTopology : IBoardTopology
     public IEnumerable<Position> GetNeighbors(Position pos)
         => _neighbors.TryGetValue(pos, out var list) ? list : Enumerable.Empty<Position>();
 
-    private void BuildShared(bool cornersCount)
+    private void BuildShared(bool cornersCount, double eps)
     {
-        const double eps = 2.6;
         foreach (var t in Tiles) _neighbors[t.Pos] = new List<Position>();
 
         // Avoid the quadratic all-pairs scan on large boards. A tile can only
