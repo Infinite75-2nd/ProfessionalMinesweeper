@@ -377,9 +377,7 @@ public static class TilingFactory
             BoardType.Vortex => new PolygonTilingTopology(BoardType.Vortex,
                 Vortex(rows, cols), AdjacencyMode.Edges, 1e-3),
             BoardType.Kagome => new PolygonTilingTopology(BoardType.Kagome,
-                Kagome(rows, cols), AdjacencyMode.Edges, 1e-3),
-            BoardType.LShape => Build(BoardType.LShape, LShape(rows, cols), AdjacencyMode.Edges),
-            BoardType.ShardFaces => Build(BoardType.ShardFaces, ShardFaces(rows, cols), AdjacencyMode.Edges),
+                Kagome(rows, cols), AdjacencyMode.EdgesAndCorners, 1e-3),
             _ => Build(BoardType.Square, Square(rows, cols), AdjacencyMode.EdgesAndCorners)
         };
     }
@@ -570,66 +568,6 @@ public static class TilingFactory
     }
 
     private static long Key(double value) => (long)Math.Round(value * 1000);
-    // 16. L-shapes: the plane is packed with 2x3 blocks, each split into two
-    // L-trominoes. Rectilinear cells like these exist in no other mode.
-    private static List<Pt[]> LShape(int rows, int cols)
-    {
-        const double s = 26;
-        var list = new List<Pt[]>();
-        for (int by = 0; by < rows; by++)
-            for (int bx = 0; bx < cols; bx++)
-            {
-                double x = bx * 2 * s, y = by * 3 * s;
-                Add(list, (x, y), (x + 2 * s, y), (x + 2 * s, y + s), (x + s, y + s), (x + s, y + 2 * s), (x, y + 2 * s));
-                Add(list, (x, y + 3 * s), (x, y + 2 * s), (x + s, y + 2 * s), (x + s, y + s), (x + 2 * s, y + s), (x + 2 * s, y + 3 * s));
-            }
-        return list;
-    }
-    // 17. Shard faces: a square lattice whose vertices are nudged by a deterministic
-    // jitter, then each quad is split along one diagonal. Neighbouring cells share
-    // the same jittered vertices, so the plane stays exactly covered while every
-    // triangle gets a different shape.
-    private static List<Pt[]> ShardFaces(int rows, int cols)
-    {
-        const double s = 34;
-        double Jitter(int a, int b, int salt)
-        {
-            unchecked
-            {
-                uint h = (uint)(a * 73856093 ^ b * 19349663 ^ salt * 83492791);
-                h ^= h >> 13; h *= 0x5bd1e995; h ^= h >> 15;
-                return (h % 2001) / 1000.0 - 1.0; // -1 .. 1
-            }
-        }
-
-        var grid = new Pt[rows + 1, cols + 1];
-        for (int r = 0; r <= rows; r++)
-            for (int c = 0; c <= cols; c++)
-                grid[r, c] = new Pt(
-                    c * s + Jitter(r, c, 1) * 0.26 * s,
-                    r * s + Jitter(r, c, 2) * 0.26 * s);
-
-        var list = new List<Pt[]>(rows * cols * 2);
-        for (int r = 0; r < rows; r++)
-            for (int c = 0; c < cols; c++)
-            {
-                var p00 = grid[r, c];
-                var p10 = grid[r, c + 1];
-                var p01 = grid[r + 1, c];
-                var p11 = grid[r + 1, c + 1];
-                if (((r + c) & 1) == 0)
-                {
-                    list.Add(new[] { p00, p10, p11 });
-                    list.Add(new[] { p00, p11, p01 });
-                }
-                else
-                {
-                    list.Add(new[] { p00, p10, p01 });
-                    list.Add(new[] { p10, p11, p01 });
-                }
-            }
-        return list;
-    }
     private static void Add(List<Pt[]> list, params (double x, double y)[] pts)
     {
         var poly = new Pt[pts.Length];

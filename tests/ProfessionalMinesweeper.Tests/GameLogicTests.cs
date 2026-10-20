@@ -51,8 +51,6 @@ public class GameLogicTests
 
     [Theory]
     [InlineData(BoardType.Kagome)]
-    [InlineData(BoardType.LShape)]
-    [InlineData(BoardType.ShardFaces)]
     public void NewModes_PartitionThePlaneWithoutOverlap(BoardType type)
     {
         var top = TilingFactory.Create(type, 7, 7);

@@ -28,13 +28,7 @@ public enum BoardType
     Vortex,
 
     /// <summary>Original design: honeycomb shrunk on its lattice with triangular gaps.</summary>
-    Kagome,
-
-    /// <summary>Original design: L-shaped trominoes packed in 2x3 blocks.</summary>
-    LShape,
-
-    /// <summary>Original design: jittered lattice split into irregular triangles.</summary>
-    ShardFaces
+    Kagome
 }
 
 public enum GameStatus

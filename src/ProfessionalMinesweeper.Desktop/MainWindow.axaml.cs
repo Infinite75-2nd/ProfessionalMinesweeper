@@ -84,8 +84,6 @@ public partial class MainWindow : Window
         RegisterBoard(MenuSunflower, BoardType.Sunflower);
         RegisterBoard(MenuVortex, BoardType.Vortex);
         RegisterBoard(MenuKagome, BoardType.Kagome);
-        RegisterBoard(MenuLShape, BoardType.LShape);
-        RegisterBoard(MenuShardFaces, BoardType.ShardFaces);
 
         MenuCustomBoard.Click += async (s, e) =>
         {
