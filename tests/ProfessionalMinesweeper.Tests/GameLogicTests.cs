@@ -49,6 +49,52 @@ public class GameLogicTests
     }
 
 
+    [Theory]
+    [InlineData(BoardType.Kagome)]
+    [InlineData(BoardType.LShape)]
+    [InlineData(BoardType.ShardFaces)]
+    public void NewModes_PartitionThePlaneWithoutOverlap(BoardType type)
+    {
+        var top = TilingFactory.Create(type, 7, 7);
+        Assert.NotEmpty(top.Tiles);
+        Assert.All(top.Tiles, t => Assert.NotEmpty(top.GetNeighbors(t.Pos)));
+        Assert.All(top.Tiles, t => Assert.All(t.Polygon, p => Assert.True(double.IsFinite(p.X) && double.IsFinite(p.Y))));
+
+        // The union of all cells must equal the sum of their areas: no gaps, no overlap.
+        double SumArea(Pt[] p)
+        {
+            double a = 0;
+            for (int i = 0; i < p.Length; i++)
+            {
+                var q1 = p[i]; var q2 = p[(i + 1) % p.Length];
+                a += q1.X * q2.Y - q2.X * q1.Y;
+            }
+            return Math.Abs(a) / 2;
+        }
+
+        var boxes = top.Tiles.Select(t => t.Polygon).ToArray();
+        double minX = boxes.Min(p => p.Min(v => v.X)), maxX = boxes.Max(p => p.Max(v => v.X));
+        double minY = boxes.Min(p => p.Min(v => v.Y)), maxY = boxes.Max(p => p.Max(v => v.Y));
+        double covered = top.Tiles.Sum(t => SumArea(t.Polygon));
+        double box = (maxX - minX) * (maxY - minY);
+        // Cells tile the bounding box up to the staircase border of the lattice.
+        Assert.InRange(covered / box, 0.55, 1.001);
+
+        bool Contains(Pt[] poly, double x, double y)
+        {
+            bool inside = false;
+            for (int i = 0, j = poly.Length - 1; i < poly.Length; j = i++)
+                if ((poly[i].Y > y) != (poly[j].Y > y) &&
+                    x < (poly[j].X - poly[i].X) * (y - poly[i].Y) / (poly[j].Y - poly[i].Y) + poly[i].X)
+                    inside = !inside;
+            return inside;
+        }
+
+        foreach (var tile in top.Tiles)
+            Assert.Equal(1, top.Tiles.Count(t => Contains(t.Polygon, tile.Center.X, tile.Center.Y)));
+    }
+
+
     [Fact]
     public void Vortex_RingsCoverTheDiskWithoutGaps()
     {

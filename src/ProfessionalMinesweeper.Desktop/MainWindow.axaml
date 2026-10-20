@@ -41,6 +41,9 @@
                 <MenuItem Header="菱形" Name="MenuBoard37"/>
                 <MenuItem Header="碎晶（自研）" Name="MenuSunflower"/>
                 <MenuItem Header="漩涡（自研）" Name="MenuVortex"/>
+                <MenuItem Header="蜂巢三角（自研）" Name="MenuKagome"/>
+                <MenuItem Header="L 形（自研）" Name="MenuLShape"/>
+                <MenuItem Header="碎面（自研）" Name="MenuShardFaces"/>
                 <Separator/>
                 <MenuItem Header="自定义棋盘 (_Custom)..." Name="MenuCustomBoard"/>
             </MenuItem>

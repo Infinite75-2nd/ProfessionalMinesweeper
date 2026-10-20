@@ -46,6 +46,10 @@ public sealed class DesktopBoardViewport : Canvas
     private void Apply()
     {
         if (_field == null) return;
+        // Clear the previous fixed size first, otherwise Measure keeps returning
+        // the old board size and switching difficulty never grows the board.
+        _field.Width = double.NaN;
+        _field.Height = double.NaN;
         _field.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
         var size = _field.DesiredSize;
         _field.Width = size.Width; _field.Height = size.Height;

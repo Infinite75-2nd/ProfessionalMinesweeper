@@ -25,6 +25,9 @@ public static class BoardNames
         BoardType.Diamond => "菱形",
         BoardType.Sunflower => "碎晶（自研）",
         BoardType.Vortex => "漩涡（自研）",
+        BoardType.Kagome => "蜂巢三角（自研）",
+        BoardType.LShape => "L 形（自研）",
+        BoardType.ShardFaces => "碎面（自研）",
         _ => type.ToString()
     };
 

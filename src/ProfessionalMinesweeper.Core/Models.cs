@@ -25,7 +25,16 @@ public enum BoardType
     Sunflower,
 
     /// <summary>Original design: concentric rings twisted into a vortex, one cell per arc sector.</summary>
-    Vortex
+    Vortex,
+
+    /// <summary>Original design: honeycomb shrunk on its lattice with triangular gaps.</summary>
+    Kagome,
+
+    /// <summary>Original design: L-shaped trominoes packed in 2x3 blocks.</summary>
+    LShape,
+
+    /// <summary>Original design: jittered lattice split into irregular triangles.</summary>
+    ShardFaces
 }
 
 public enum GameStatus

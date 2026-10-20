@@ -376,6 +376,10 @@ public static class TilingFactory
                 SunflowerVoronoi(rows, cols), AdjacencyMode.Edges, 1e-4),
             BoardType.Vortex => new PolygonTilingTopology(BoardType.Vortex,
                 Vortex(rows, cols), AdjacencyMode.Edges, 1e-3),
+            BoardType.Kagome => new PolygonTilingTopology(BoardType.Kagome,
+                Kagome(rows, cols), AdjacencyMode.Edges, 1e-3),
+            BoardType.LShape => Build(BoardType.LShape, LShape(rows, cols), AdjacencyMode.Edges),
+            BoardType.ShardFaces => Build(BoardType.ShardFaces, ShardFaces(rows, cols), AdjacencyMode.Edges),
             _ => Build(BoardType.Square, Square(rows, cols), AdjacencyMode.EdgesAndCorners)
         };
     }
@@ -505,6 +509,127 @@ public static class TilingFactory
 
     private static Pt OnCircle(double radius, double angle) =>
         new(Math.Cos(angle) * radius, Math.Sin(angle) * radius);
+
+    // 15. Kagome: the medial honeycomb. Each hexagon is replaced by the polygon
+    // through the midpoints of its edges; the three midpoints meeting at every
+    // original vertex bound an equilateral triangle. Triangles and hexagons share
+    // whole edges, so the patch is covered exactly once.
+    private static List<Pt[]> Kagome(int rows, int cols)
+    {
+        const double s = 26;                    // hexagon circumradius
+        double h = s * Math.Sqrt(3) / 2;
+        var cells = new List<Pt[]>();
+        var gaps = new Dictionary<(long, long), List<Pt>>();
+
+        for (int j = -1; j <= rows; j++)
+            for (int i = -1; i <= cols; i++)
+            {
+                double cx = i * s * Math.Sqrt(3) + (j & 1) * s * Math.Sqrt(3) / 2;
+                double cy = j * s * 1.5;
+
+                var corner = new Pt[6];
+                for (int k = 0; k < 6; k++)
+                {
+                    double angle = Math.PI / 6 + k * Math.PI / 3;
+                    corner[k] = new Pt(cx + s * Math.Cos(angle), cy + s * Math.Sin(angle));
+                }
+
+                // Medial hexagon: one vertex per original edge midpoint.
+                var tile = new Pt[6];
+                for (int k = 0; k < 6; k++)
+                {
+                    var a = corner[k];
+                    var b = corner[(k + 1) % 6];
+                    tile[k] = new Pt((a.X + b.X) / 2, (a.Y + b.Y) / 2);
+                }
+                cells.Add(tile);
+
+                // Two edge midpoints meet at each corner; the third belongs to the
+                // neighbouring hexagon and joins through the shared vertex key.
+                for (int k = 0; k < 6; k++)
+                {
+                    var p = corner[k];
+                    var key = (Key(p.X), Key(p.Y));
+                    if (!gaps.TryGetValue(key, out var list)) gaps[key] = list = new List<Pt>(3);
+                    AddUnique(list, tile[(k + 5) % 6]);
+                    AddUnique(list, tile[k]);
+                }
+            }
+
+        foreach (var list in gaps.Values)
+            if (list.Count == 3) cells.Add(list.ToArray());
+
+        return cells;
+    }
+
+    private static void AddUnique(List<Pt> list, Pt point)
+    {
+        foreach (var existing in list)
+            if (existing.DistanceTo(point) < 1e-6) return;
+        list.Add(point);
+    }
+
+    private static long Key(double value) => (long)Math.Round(value * 1000);
+    // 16. L-shapes: the plane is packed with 2x3 blocks, each split into two
+    // L-trominoes. Rectilinear cells like these exist in no other mode.
+    private static List<Pt[]> LShape(int rows, int cols)
+    {
+        const double s = 26;
+        var list = new List<Pt[]>();
+        for (int by = 0; by < rows; by++)
+            for (int bx = 0; bx < cols; bx++)
+            {
+                double x = bx * 2 * s, y = by * 3 * s;
+                Add(list, (x, y), (x + 2 * s, y), (x + 2 * s, y + s), (x + s, y + s), (x + s, y + 2 * s), (x, y + 2 * s));
+                Add(list, (x, y + 3 * s), (x, y + 2 * s), (x + s, y + 2 * s), (x + s, y + s), (x + 2 * s, y + s), (x + 2 * s, y + 3 * s));
+            }
+        return list;
+    }
+    // 17. Shard faces: a square lattice whose vertices are nudged by a deterministic
+    // jitter, then each quad is split along one diagonal. Neighbouring cells share
+    // the same jittered vertices, so the plane stays exactly covered while every
+    // triangle gets a different shape.
+    private static List<Pt[]> ShardFaces(int rows, int cols)
+    {
+        const double s = 34;
+        double Jitter(int a, int b, int salt)
+        {
+            unchecked
+            {
+                uint h = (uint)(a * 73856093 ^ b * 19349663 ^ salt * 83492791);
+                h ^= h >> 13; h *= 0x5bd1e995; h ^= h >> 15;
+                return (h % 2001) / 1000.0 - 1.0; // -1 .. 1
+            }
+        }
+
+        var grid = new Pt[rows + 1, cols + 1];
+        for (int r = 0; r <= rows; r++)
+            for (int c = 0; c <= cols; c++)
+                grid[r, c] = new Pt(
+                    c * s + Jitter(r, c, 1) * 0.26 * s,
+                    r * s + Jitter(r, c, 2) * 0.26 * s);
+
+        var list = new List<Pt[]>(rows * cols * 2);
+        for (int r = 0; r < rows; r++)
+            for (int c = 0; c < cols; c++)
+            {
+                var p00 = grid[r, c];
+                var p10 = grid[r, c + 1];
+                var p01 = grid[r + 1, c];
+                var p11 = grid[r + 1, c + 1];
+                if (((r + c) & 1) == 0)
+                {
+                    list.Add(new[] { p00, p10, p11 });
+                    list.Add(new[] { p00, p11, p01 });
+                }
+                else
+                {
+                    list.Add(new[] { p00, p10, p01 });
+                    list.Add(new[] { p10, p11, p01 });
+                }
+            }
+        return list;
+    }
     private static void Add(List<Pt[]> list, params (double x, double y)[] pts)
     {
         var poly = new Pt[pts.Length];
