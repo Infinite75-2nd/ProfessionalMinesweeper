@@ -12,8 +12,11 @@ public static class TilingFactory
 {
     public static (int rows, int cols) GetPresetDimensions(BoardType type, int level)
     {
-        var preset = Array.Find(OriginalPresets.All, p => p.Type == type && p.Level == level)
-            ?? throw new ArgumentOutOfRangeException(nameof(level));
+        var preset = Array.Find(OriginalPresets.All, p => p.Type == type && p.Level == level);
+        // Boards added after the original have no captured dimensions; fall back to
+        // the same sizes the desktop difficulty table uses so both ends agree.
+        if (preset is null)
+            return level switch { 0 => (9, 9), 1 => (16, 16), _ => (16, 30) };
         // The procedural triangular generator takes the number of triangle rows.
         return (type == BoardType.Triangle ? preset.Columns : preset.Rows, preset.Columns);
     }
@@ -368,7 +371,9 @@ public static class TilingFactory
             BoardType.Mosaic57 => Build(BoardType.Mosaic57, MosaicExact(rows, cols), AdjacencyMode.EdgesAndCorners),
             BoardType.TiltedH => Build(BoardType.TiltedH, TiltedH(rows, cols), AdjacencyMode.EdgesAndCorners),
             BoardType.Sunflower => new PolygonTilingTopology(BoardType.Sunflower,
-                SunflowerVoronoi(rows, cols), AdjacencyMode.Edges, 0.75),
+                // Voronoi edges are exactly collinear, so a tight tolerance only
+                // rejects point-touching cells while keeping genuinely short edges.
+                SunflowerVoronoi(rows, cols), AdjacencyMode.Edges, 1e-4),
             _ => Build(BoardType.Square, Square(rows, cols), AdjacencyMode.EdgesAndCorners)
         };
     }

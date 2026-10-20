@@ -6,6 +6,50 @@ namespace ProfessionalMinesweeper.Tests;
 public class GameLogicTests
 {
     [Fact]
+    public void Sunflower_NeighborsMatchSharedEdges()
+    {
+        var top = TilingFactory.Create(BoardType.Sunflower, 9, 9);
+        var tiles = top.Tiles.ToArray();
+
+        static double SharedLength(Pt[] a, Pt[] b)
+        {
+            double best = 0;
+            for (int i = 0; i < a.Length; i++)
+            {
+                var a1 = a[i]; var a2 = a[(i + 1) % a.Length];
+                double alen = a1.DistanceTo(a2);
+                if (alen < 1e-9) continue;
+                double ux = (a2.X - a1.X) / alen, uy = (a2.Y - a1.Y) / alen;
+                for (int k = 0; k < b.Length; k++)
+                {
+                    var b1 = b[k]; var b2 = b[(k + 1) % b.Length];
+                    if (b1.DistanceTo(b2) < 1e-9) continue;
+                    if (Math.Abs((b1.X - a1.X) * -uy + (b1.Y - a1.Y) * ux) > 1e-4 ||
+                        Math.Abs((b2.X - a1.X) * -uy + (b2.Y - a1.Y) * ux) > 1e-4) continue;
+                    double t1 = (b1.X - a1.X) * ux + (b1.Y - a1.Y) * uy;
+                    double t2 = (b2.X - a1.X) * ux + (b2.Y - a1.Y) * uy;
+                    double lo = Math.Max(0, Math.Min(t1, t2)), hi = Math.Min(alen, Math.Max(t1, t2));
+                    if (hi - lo > best) best = hi - lo;
+                }
+            }
+            return best;
+        }
+
+        for (int i = 0; i < tiles.Length; i++)
+        {
+            var actual = top.GetNeighbors(tiles[i].Pos).ToHashSet();
+            for (int j = 0; j < tiles.Length; j++)
+            {
+                if (i == j) continue;
+                bool sharesEdge = SharedLength(tiles[i].Polygon, tiles[j].Polygon) > 1e-4;
+                Assert.Equal(sharesEdge, actual.Contains(tiles[j].Pos));
+            }
+            Assert.InRange(actual.Count, 3, 9);
+        }
+    }
+
+
+    [Fact]
     public void Sunflower_CoversBoardExactlyOnceWithOrganicCells()
     {
         var top = TilingFactory.Create(BoardType.Sunflower, 9, 9);
