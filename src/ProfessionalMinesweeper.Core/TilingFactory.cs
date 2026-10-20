@@ -374,6 +374,8 @@ public static class TilingFactory
                 // Voronoi edges are exactly collinear, so a tight tolerance only
                 // rejects point-touching cells while keeping genuinely short edges.
                 SunflowerVoronoi(rows, cols), AdjacencyMode.Edges, 1e-4),
+            BoardType.Vortex => new PolygonTilingTopology(BoardType.Vortex,
+                Vortex(rows, cols), AdjacencyMode.Edges, 1e-3),
             _ => Build(BoardType.Square, Square(rows, cols), AdjacencyMode.EdgesAndCorners)
         };
     }
@@ -445,6 +447,64 @@ public static class TilingFactory
         return result;
     }
 
+    // 14. Vortex: concentric rings, each rotated a little further than the one
+    // inside it so the board reads as a spiral.
+    //
+    // All boundaries live on one angular grid of 720 steps, and every ring's cell
+    // count divides that grid. A circle shared by two rings is therefore carved by
+    // integer indices only, so adjacent rings reuse identical arcs and the disk is
+    // covered exactly once with no floating-point seams.
+    private static List<Pt[]> Vortex(int rows, int cols)
+    {
+        const int Grid = 720;
+        const int TwistSteps = 12;   // rotation per ring, in grid steps
+        const double dr = 30;
+
+        // Cell counts per ring: growing, and each divides Grid so span stays integral.
+        int[] ringCounts = { 6, 12, 18, 24, 30, 36, 48, 60, 72, 90, 120, 144 };
+
+        int target = Math.Clamp(rows * cols, 12, 900);
+        int rings = 1, total = 1;
+        while (rings <= ringCounts.Length)
+        {
+            total += ringCounts[rings - 1];
+            if (total >= target || rings == ringCounts.Length) break;
+            rings++;
+        }
+
+        double step = 2 * Math.PI / Grid;
+        var cells = new List<Pt[]>(total);
+
+        // Centre disk: every grid point of the inner circle.
+        var centre = new Pt[Grid];
+        for (int k = 0; k < Grid; k++) centre[k] = OnCircle(dr, k * step);
+        cells.Add(centre);
+
+        for (int r = 1; r <= rings; r++)
+        {
+            int count = ringCounts[r - 1];
+            int span = Grid / count;
+            int twist = (r * TwistSteps) % Grid;
+
+            for (int j = 0; j < count; j++)
+            {
+                int startIndex = twist + j * span;
+                int endIndex = startIndex + span;
+
+                var polygon = new List<Pt>(span * 4);
+                for (int i = startIndex; i <= endIndex; i++)
+                    polygon.Add(OnCircle(r * dr, i * step));
+                for (int i = endIndex; i >= startIndex; i--)
+                    polygon.Add(OnCircle((r + 1) * dr, i * step));
+
+                cells.Add(polygon.ToArray());
+            }
+        }
+        return cells;
+    }
+
+    private static Pt OnCircle(double radius, double angle) =>
+        new(Math.Cos(angle) * radius, Math.Sin(angle) * radius);
     private static void Add(List<Pt[]> list, params (double x, double y)[] pts)
     {
         var poly = new Pt[pts.Length];

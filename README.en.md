@@ -14,7 +14,7 @@ This project recreates the original **Professional Minesweeper (`profmine.exe`)*
 
 ## Features
 
-- 18 original boards plus an original design, “Crystal Shards”: a Voronoi partition of a golden-angle spiral point set, seamless by construction with a unique outline per cell.
+- 18 original boards plus two original designs: “Crystal Shards” (Voronoi of a golden-angle spiral — seamless, every cell unique) and “Vortex” (concentric rings twisted ring by ring, seamless thanks to an integer angular grid).
 - Three difficulties, deferred mine placement, first-click protection, flags/question marks, chording, timer and game status.
 - Windows: wheel to pan vertically, Shift + wheel horizontally, Ctrl + wheel to zoom, and left-button dragging.
 - Android: drag to pan, pinch to zoom, hold covered cells to flag, hold revealed cells to preview neighbors, and double-tap numbers to chord. Double-tap the board after a win or loss to restart.

@@ -22,7 +22,10 @@ public enum BoardType
     RealPentagonal,
 
     /// <summary>Original design: organic cells from a golden-angle spiral Voronoi diagram.</summary>
-    Sunflower
+    Sunflower,
+
+    /// <summary>Original design: concentric rings twisted into a vortex, one cell per arc sector.</summary>
+    Vortex
 }
 
 public enum GameStatus

@@ -40,6 +40,7 @@
                 <MenuItem Header="正五边形" Name="MenuBoard36"/>
                 <MenuItem Header="菱形" Name="MenuBoard37"/>
                 <MenuItem Header="碎晶（自研）" Name="MenuSunflower"/>
+                <MenuItem Header="漩涡（自研）" Name="MenuVortex"/>
                 <Separator/>
                 <MenuItem Header="自定义棋盘 (_Custom)..." Name="MenuCustomBoard"/>
             </MenuItem>

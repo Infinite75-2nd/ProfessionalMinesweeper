@@ -82,6 +82,7 @@ public partial class MainWindow : Window
         RegisterBoard(MenuBoard36, BoardType.RealPentagonal);
         RegisterBoard(MenuBoard37, BoardType.Diamond);
         RegisterBoard(MenuSunflower, BoardType.Sunflower);
+        RegisterBoard(MenuVortex, BoardType.Vortex);
 
         MenuCustomBoard.Click += async (s, e) =>
         {

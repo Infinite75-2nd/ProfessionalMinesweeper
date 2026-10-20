@@ -24,6 +24,7 @@ public static class BoardNames
         BoardType.RealPentagonal => "正五边形",
         BoardType.Diamond => "菱形",
         BoardType.Sunflower => "碎晶（自研）",
+        BoardType.Vortex => "漩涡（自研）",
         _ => type.ToString()
     };
 

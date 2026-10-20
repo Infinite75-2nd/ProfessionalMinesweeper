@@ -50,6 +50,40 @@ public class GameLogicTests
 
 
     [Fact]
+    public void Vortex_RingsCoverTheDiskWithoutGaps()
+    {
+        var top = TilingFactory.Create(BoardType.Vortex, 9, 9);
+        // 1 centre + 6 * (1 + 2 + ... + rings)
+        int expected = 1 + 3 * 5 * 6;
+        Assert.Equal(expected, top.TotalCells);
+
+        bool Contains(Pt[] polygon, double x, double y)
+        {
+            bool inside = false;
+            for (int i = 0, j = polygon.Length - 1; i < polygon.Length; j = i++)
+                if ((polygon[i].Y > y) != (polygon[j].Y > y) &&
+                    x < (polygon[j].X - polygon[i].X) * (y - polygon[i].Y) /
+                        (polygon[j].Y - polygon[i].Y) + polygon[i].X)
+                    inside = !inside;
+            return inside;
+        }
+
+        foreach (var tile in top.Tiles)
+            Assert.Equal(1, top.Tiles.Count(t => Contains(t.Polygon, tile.Center.X, tile.Center.Y)));
+
+        // Ring cells always connect inward and outward; the centre touches ring one.
+        var centre = top.Tiles[0];
+        Assert.All(top.Tiles, t =>
+        {
+            var n = top.GetNeighbors(t.Pos).ToArray();
+            Assert.NotEmpty(n);
+            foreach (var other in n) Assert.Contains(t.Pos, top.GetNeighbors(other));
+        });
+        Assert.Equal(6, top.GetNeighbors(centre.Pos).Count());
+    }
+
+
+    [Fact]
     public void Sunflower_CoversBoardExactlyOnceWithOrganicCells()
     {
         var top = TilingFactory.Create(BoardType.Sunflower, 9, 9);
