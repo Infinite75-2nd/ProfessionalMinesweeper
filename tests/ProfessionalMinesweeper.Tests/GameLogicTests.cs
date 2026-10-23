@@ -154,6 +154,20 @@ public class GameLogicTests
         Assert.All(top.Tiles, t => Assert.NotEmpty(top.GetNeighbors(t.Pos)));
     }
 
+    [Theory]
+    [InlineData(BoardType.Sunflower)]
+    [InlineData(BoardType.Vortex)]
+    [InlineData(BoardType.Kagome)]
+    public void SelfDesignedBoards_GrowWithRequestedSize(BoardType type)
+    {
+        int small = TilingFactory.Create(type, 9, 9).TotalCells;
+        int medium = TilingFactory.Create(type, 16, 16).TotalCells;
+        int large = TilingFactory.Create(type, 16, 30).TotalCells;
+        Assert.True(small < medium, $"{type}: {small} !< {medium}");
+        Assert.True(medium < large, $"{type}: {medium} !< {large}");
+    }
+
+
     [Fact]
     public void LogicalSolver_RejectsAnUnavoidableFiftyFifty()
     {

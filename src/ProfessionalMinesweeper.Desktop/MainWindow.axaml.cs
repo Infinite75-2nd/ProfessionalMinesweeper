@@ -144,7 +144,8 @@ public partial class MainWindow : Window
             BoardType.TiltedH => level switch { 0 => (8, 8, 10), 1 => (16, 16, 40), _ => (30, 16, 95) },
             BoardType.RealPentagonal => level switch { 0 => (11, 6, 10), 1 => (23, 12, 40), _ => (43, 12, 99) },
             BoardType.Diamond => level switch { 0 => (9, 9, 10), 1 => (17, 17, 35), _ => (33, 17, 90) },
-            _ => (8, 8, 10)
+            // Self-designed boards (and any future type) still scale with difficulty.
+            _ => level switch { 0 => (9, 9, 10), 1 => (16, 16, 40), _ => (16, 30, 99) }
         };
 
     private void StartNewGame(BoardType type, int difficulty)
